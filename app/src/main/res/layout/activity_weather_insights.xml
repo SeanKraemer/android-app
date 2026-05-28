@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Layout for WeatherInsightsActivity
+    Displays LLM-generated weather questions and answers
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".WeatherInsightsActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- City Name Header -->
+        <TextView
+            android:id="@+id/insightsCityName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="City Name"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Weather Summary -->
+        <TextView
+            android:id="@+id/weatherSummary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Current Weather Summary"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Section Title for Questions -->
+        <TextView
+            android:id="@+id/questionText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Weather Questions"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Loading Spinner (shown while generating questions) -->
+        <ProgressBar
+            android:id="@+id/loadingSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="visible" />
+
+        <!-- Loading Text -->
+        <TextView
+            android:id="@+id/loadingText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Loading questions..."
+            android:textSize="16sp"
+            android:gravity="center"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            android:visibility="visible" />
+
+        <!-- Container for Question Buttons (populated dynamically) -->
+        <LinearLayout
+            android:id="@+id/questionsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone" />
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="#CCCCCC"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Answer Section Title -->
+        <TextView
+            android:id="@+id/answerTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Answer"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone" />
+
+        <!-- Answer Display Area (shown after clicking a question) -->
+        <ScrollView
+            android:id="@+id/answerScrollView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="150dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/answerText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Click a question to see the answer"
+                android:textSize="16sp"
+                android:padding="12dp"
+                android:lineSpacingExtra="4dp" />
+        </ScrollView>
+
+    </LinearLayout>
+</ScrollView>

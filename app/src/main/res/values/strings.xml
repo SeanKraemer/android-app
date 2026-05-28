@@ -1,0 +1,57 @@
+<resources>
+    <string name="app_name">Team 425</string>
+    <string-array name="layout_options">
+        <item>Layout 1 - Default</item>
+        <item>Layout 2 - Compact</item>
+        <item>Layout 3 - Detailed</item>
+    </string-array>
+
+    <!-- Login Activity Strings -->
+    <string name="login_title">Weather App</string>
+    <string name="login_subtitle">Sign in or create an account</string>
+    <string name="username_hint">Username</string>
+    <string name="password_hint">Password</string>
+    <string name="select_layout">Select UI Layout:</string>
+    <string name="sign_in_button">Sign In</string>
+    <string name="no_account_text">Don\'t have an account? </string>
+    <string name="sign_up_link"> Sign Up</string>
+
+    <!-- Sign Up Activity Strings -->
+    <string name="signup_title">Create Account</string>
+    <string name="signup_subtitle">Join the Weather App</string>
+    <string name="username_hint_signup">Username (min 3 characters)</string>
+    <string name="password_hint_signup">Password (min 4 characters)</string>
+    <string name="confirm_password_hint">Confirm Password</string>
+    <string name="create_account_button">Create Account</string>
+    <string name="back_to_signin">Back to Sign In</string>
+    <string name="theme_hint">Describe your theme (e.g. \'summer beach\')</string>
+
+    <!-- Error and Success Messages -->
+    <string name="error_empty_fields">Please fill in all fields</string>
+    <string name="error_username_short">Username must be at least 3 characters</string>
+    <string name="error_password_short">Password must be at least 4 characters</string>
+    <string name="error_passwords_mismatch">Passwords do not match</string>
+    <string name="error_account_exists">Account already exists. Please sign in.</string>
+    <string name="error_invalid_credentials">Invalid username or password</string>
+    <string name="success_signup">Account created successfully! Signing in...</string>
+    <string name="success_signin">Sign in successful!</string>
+    <string name="error_empty_login_fields">Please enter both username and password</string>
+
+    <!-- Main Activity Strings -->
+    <string name="team_prefix">Team </string>
+    <string name="logout_button">Logout</string>
+
+    <!-- New strings for Details layout -->
+    <string name="loading_text">Loading...</string>
+    <string name="show_map">Show Map</string>
+    <string name="weather_insights">Weather Insights</string>
+
+    <!-- Map Activity Strings -->
+    <string name="map_city_label">City: </string>
+    <string name="map_latitude_label">Latitude: </string>
+    <string name="map_longitude_label">Longitude: </string>
+    <string name="map_city_format">City: %s</string>
+    <string name="map_latitude_format">Latitude: %.6f</string>
+    <string name="map_longitude_format">Longitude: %.6f</string>
+
+</resources>

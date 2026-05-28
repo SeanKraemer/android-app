@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WeatherImageGenerator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">edu.uiuc.cs427app</a> &gt; <span class="el_source">WeatherImageGenerator.java</span></div><h1>WeatherImageGenerator.java</h1><pre class="source lang-java linenums">package edu.uiuc.cs427app;
+
+import com.google.genai.Client;
+
+import com.google.genai.types.GenerateImagesConfig;
+import com.google.genai.types.GenerateImagesResponse;
+import com.google.genai.types.Image;
+import com.google.gson.annotations.SerializedName;
+
+import android.util.Log;
+
+import java.util.concurrent.CompletableFuture;
+
+/**
+ * WeatherImageGenerator is a utility class that uses the Gemini LLM to generate
+ * a weather-themed image (as a base64 encoded PNG string) based on current weather data.
+ *
+ * This class provides a static method to generate a base64 encoded PNG image representation
+ * of the weather conditions. The usage pattern is asynchronous with callbacks.
+ */
+<span class="nc" id="L21">public class WeatherImageGenerator {</span>
+    private static final String TAG = &quot;WeatherImageGenerator&quot;;
+
+    /**
+     * Data class representing the generated weather image.
+     * Contains the base64 encoded PNG image data as a string.
+     */
+<span class="fc" id="L28">    public static class WeatherImage {</span>
+        @SerializedName(&quot;imageBytes&quot;)
+        public byte[] imageBytes;
+    }
+
+    /**
+     * Callback interface for asynchronous image generation.
+     */
+    public interface ImageCallback {
+        /**
+         * Called when the image is successfully generated.
+         * @param image The generated weather image
+         */
+        void onImageGenerated(WeatherImage image);
+
+        /**
+         * Called when image generation fails.
+         * @param e The exception that occurred
+         */
+        void onError(Exception e);
+    }
+
+    /**
+     * Generates a weather-themed base64 encoded PNG image based on current weather conditions.
+     *
+     * @param apiKey         Gemini API key for authentication
+     * @param dateTime       Current dateTime
+     * @param cityName       Name of the city
+     * @param temperature    Current temperature (e.g., &quot;72°F&quot;)
+     * @param weatherCondition Weather condition (e.g., &quot;Sunny&quot;, &quot;Rainy&quot;)
+     * @param humidity       Humidity percentage (e.g., &quot;65%&quot;)
+     * @param windCondition  Wind condition (e.g., &quot;15 mph NE&quot;)
+     * @param callback       Callback to receive the generated image or an error
+     */
+    public static void generateImage(
+            String apiKey,
+            String dateTime,
+            String cityName,
+            String temperature,
+            String weatherCondition,
+            String humidity,
+            String windCondition,
+            ImageCallback callback
+    ) {
+<span class="pc bpc" id="L72" title="2 of 4 branches missed.">        if (apiKey == null || apiKey.isEmpty()) {</span>
+            // Log a configuration error so missing API key is prominent in logs
+<span class="nc" id="L74">            Log.e(TAG, &quot;API key is missing!&quot;);</span>
+            // Notify the caller that generation cannot proceed without a valid API key and terminate the operation
+<span class="nc" id="L76">            callback.onError(new IllegalArgumentException(&quot;API key missing&quot;));</span>
+<span class="nc" id="L77">            return;</span>
+        }
+
+        // Informational log indicating the operation has started for this city
+<span class="fc" id="L81">        Log.d(TAG, &quot;Generating weather image for &quot; + cityName);</span>
+<span class="fc" id="L82">        Client genAIClient = Client.builder().apiKey(apiKey).build();</span>
+
+        // Debug which backend is selected to help troubleshoot environment differences
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">        if (genAIClient.vertexAI()) {</span>
+<span class="nc" id="L86">            Log.d(TAG, &quot;Using Vertex AI&quot;);</span>
+        } else {
+<span class="fc" id="L88">            Log.d(TAG, &quot;Using Gemini Developer API&quot;);</span>
+        }
+
+<span class="fc" id="L91">        String prompt = &quot;You are a creative weather artist. Based on the following weather data, generate a simple and visually appealing image that represents the weather in the city during this time.\n\n&quot; +</span>
+                &quot;WEATHER DATA:\n&quot; +
+                &quot;- Date/Time: &quot; + dateTime + &quot;\n&quot; +
+                &quot;- City: &quot; + cityName + &quot;\n&quot; +
+                &quot;- Temperature: &quot; + temperature + &quot;\n&quot; +
+                &quot;- Condition: &quot; + weatherCondition + &quot;\n&quot; +
+                &quot;- Humidity: &quot; + humidity + &quot;\n&quot; +
+                &quot;- Wind: &quot; + windCondition + &quot;\n\n&quot; +
+                &quot;REQUIREMENTS:\n&quot; +
+                &quot;1. Depict the city as it would appear in the current weather conditions.\n&quot; +
+                &quot;2. The colors should reflect the weather conditions (e.g., warm colors for sunny, cool colors for rainy/cold).\n&quot; +
+                &quot;3. Do not include text or human figures.&quot;;
+
+        // Verbose log of the complete prompt for debugging
+<span class="fc" id="L105">        Log.v(TAG, &quot;Full prompt for image: &quot; + prompt);</span>
+
+        GenerateImagesConfig config =
+<span class="fc" id="L108">                GenerateImagesConfig.builder()</span>
+<span class="fc" id="L109">                        .numberOfImages(1)</span>
+<span class="fc" id="L110">                        .outputMimeType(&quot;image/png&quot;)</span>
+<span class="fc" id="L111">                        .includeSafetyAttributes(true)</span>
+<span class="fc" id="L112">                        .build();</span>
+
+        // Initiates an asynchronous image generation request to the Gemini Imagen API
+<span class="fc" id="L115">        CompletableFuture&lt;GenerateImagesResponse&gt; responseFuture = genAIClient.async.models.generateImages(</span>
+                        &quot;imagen-4.0-generate-001&quot;, prompt, config); // Use the actual prompt
+
+<span class="fc" id="L118">        responseFuture</span>
+                // Callback invoked when the CompletableFuture completes successfully
+<span class="fc" id="L120">                .thenAccept(</span>
+                        response -&gt; {
+<span class="pc bpc" id="L122" title="3 of 6 branches missed.">                            if (response == null || response.images() == null || response.images().isEmpty()) {</span>
+                                // Error log when API returned no images
+<span class="nc" id="L124">                                Log.e(TAG, &quot;Unable to generate images.&quot;);</span>
+                                // Notify caller that the API returned no images
+<span class="nc" id="L126">                                callback.onError(new Exception(&quot;No image generated.&quot;));</span>
+                            }
+                            else {
+                                // Select the first generated image from the response's images list
+<span class="fc" id="L130">                                Image generatedImage = response.images().get(0);</span>
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">                                if (generatedImage.imageBytes().isPresent()) {</span>
+<span class="fc" id="L132">                                    WeatherImage weatherImage = new WeatherImage();</span>
+<span class="fc" id="L133">                                    weatherImage.imageBytes = generatedImage.imageBytes().get();</span>
+                                    // Forward the successfully decoded image bytes to the caller
+<span class="fc" id="L135">                                    callback.onImageGenerated(weatherImage);</span>
+<span class="fc" id="L136">                                } else {</span>
+                                    // Notify caller that the image object lacked byte data (malformed image payload)
+<span class="nc" id="L138">                                    callback.onError(new Exception(&quot;Generated image data is null.&quot;));</span>
+                                }
+                            }
+<span class="fc" id="L141">                        })</span>
+                // Callback invoked when the CompletableFuture completes exceptionally
+<span class="fc" id="L143">                .exceptionally(e -&gt; {</span>
+                    // Log the exception encountered during async processing to aid debugging and error tracking
+<span class="nc" id="L145">                    Log.e(TAG, &quot;Image generation failed: &quot; + e.getMessage());</span>
+                    // Propagate the error to the ImageCallback so upstream code (UI or retry logic) can handle it appropriately
+<span class="nc" id="L147">                    callback.onError(new Exception(&quot;Image generation failed: &quot; + e.getMessage()));</span>
+<span class="nc" id="L148">                    return null;</span>
+                })
+                // Ensures the image generation request fully completes before this method returns
+<span class="fc" id="L151">                .join();</span>
+<span class="fc" id="L152">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

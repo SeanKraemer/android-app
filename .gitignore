@@ -1,0 +1,22 @@
+# Gradle files
+.gradle/
+build/
+
+# Local properties
+local.properties
+
+# IDE files
+.idea/
+*.iml
+.DS_Store
+
+# Captures
+captures/
+
+# C++ files
+.cxx/
+
+# Build cache files
+*.lock
+*.bin
+*.probe

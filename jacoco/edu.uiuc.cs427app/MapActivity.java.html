@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MapActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">edu.uiuc.cs427app</a> &gt; <span class="el_source">MapActivity.java</span></div><h1>MapActivity.java</h1><pre class="source lang-java linenums">package edu.uiuc.cs427app;
+
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+
+/**
+ * MapActivity displays an interactive Google Map for a selected city.
+ *
+ * This activity:
+ * 1. Receives city name, latitude, and longitude from MainActivity via Intent
+ * 2. Displays city information in TextViews
+ * 3. Shows an interactive Google Map centered on the city coordinates
+ * 4. Adds a marker at the city location
+ */
+<span class="fc" id="L28">public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {</span>
+
+    // City information
+    private String cityName;
+    private double latitude;
+    private double longitude;
+
+    // Database helper for user themes
+    private UserDatabaseHelper dbHelper;
+
+    // Theme colors
+    private int themeBackgroundColor;
+    private int themeTextColor;
+    private int themeToolbarColor;
+
+    // SharedPreferences constants
+    private static final String PREFS_NAME = &quot;LoginPrefs&quot;;
+    private static final String KEY_CURRENT_USER = &quot;current_user&quot;;
+
+    // UI Components
+    private TextView cityNameTextView;
+    private TextView latitudeTextView;
+    private TextView longitudeTextView;
+
+    // Google Map
+    private GoogleMap googleMap;
+
+    /**
+     * Lifecycle callback invoked when the activity is being created.
+     * @param savedInstanceState Bundle
+     */
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="fc" id="L61">        super.onCreate(savedInstanceState);</span>
+<span class="fc" id="L62">        setContentView(R.layout.activity_map);</span>
+
+        // Initialize database helper
+<span class="fc" id="L65">        dbHelper = new UserDatabaseHelper(this);</span>
+
+        // Setup toolbar
+<span class="fc" id="L68">        Toolbar toolbar = findViewById(R.id.toolbar);</span>
+<span class="fc" id="L69">        setSupportActionBar(toolbar);</span>
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">        if (getSupportActionBar() != null) {</span>
+<span class="fc" id="L71">            getSupportActionBar().setDisplayHomeAsUpEnabled(true);</span>
+<span class="fc" id="L72">            getSupportActionBar().setDisplayShowHomeEnabled(true);</span>
+        }
+
+        // Load user theme
+<span class="fc" id="L76">        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);</span>
+<span class="fc" id="L77">        String username = sharedPreferences.getString(KEY_CURRENT_USER, &quot;User&quot;);</span>
+<span class="fc" id="L78">        UserDatabaseHelper.User user = dbHelper.getUserTheme(username);</span>
+
+<span class="pc bpc" id="L80" title="3 of 4 branches missed.">        String backgroundColor = user != null &amp;&amp; user.themeBackground != null ? user.themeBackground : &quot;#FFFFFF&quot;;</span>
+<span class="pc bpc" id="L81" title="3 of 4 branches missed.">        String textColor = user != null &amp;&amp; user.themeText != null ? user.themeText : &quot;#000000&quot;;</span>
+<span class="pc bpc" id="L82" title="3 of 4 branches missed.">        String toolbarColor = user != null &amp;&amp; user.themeToolbar != null ? user.themeToolbar : &quot;#4CAF50&quot;;</span>
+
+<span class="fc" id="L84">        themeBackgroundColor = Color.parseColor(backgroundColor);</span>
+<span class="fc" id="L85">        themeTextColor = Color.parseColor(textColor);</span>
+<span class="fc" id="L86">        themeToolbarColor = Color.parseColor(toolbarColor);</span>
+
+        // Get city information from Intent
+<span class="fc" id="L89">        Intent intent = getIntent();</span>
+<span class="fc" id="L90">        cityName = intent.getStringExtra(&quot;city&quot;);</span>
+<span class="fc" id="L91">        latitude = intent.getDoubleExtra(&quot;latitude&quot;, 0.0);</span>
+<span class="fc" id="L92">        longitude = intent.getDoubleExtra(&quot;longitude&quot;, 0.0);</span>
+
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">        if (cityName == null) {</span>
+<span class="nc" id="L95">            cityName = &quot;Unknown City&quot;;</span>
+        }
+
+        // Set action bar title
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">        if (getSupportActionBar() != null) {</span>
+<span class="fc" id="L100">            getSupportActionBar().setTitle(cityName + &quot; Map&quot;);</span>
+        }
+
+        // Initialize UI elements
+<span class="fc" id="L104">        initializeViews();</span>
+
+        // Apply theme
+<span class="fc" id="L107">        applyTheme(toolbar);</span>
+
+        // Initialize the map
+<span class="fc" id="L110">        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()</span>
+<span class="fc" id="L111">                .findFragmentById(R.id.map);</span>
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">        if (mapFragment != null) {</span>
+<span class="fc" id="L113">            mapFragment.getMapAsync(this);</span>
+        }
+<span class="fc" id="L115">    }</span>
+
+    /**
+     * Initializes all UI components by finding them in the layout.
+     */
+    private void initializeViews() {
+<span class="fc" id="L121">        cityNameTextView = findViewById(R.id.cityNameTextView);</span>
+<span class="fc" id="L122">        latitudeTextView = findViewById(R.id.latitudeTextView);</span>
+<span class="fc" id="L123">        longitudeTextView = findViewById(R.id.longitudeTextView);</span>
+
+        // Display city information
+<span class="fc" id="L126">        cityNameTextView.setText(getString(R.string.map_city_format, cityName));</span>
+<span class="fc" id="L127">        latitudeTextView.setText(getString(R.string.map_latitude_format, latitude));</span>
+<span class="fc" id="L128">        longitudeTextView.setText(getString(R.string.map_longitude_format, longitude));</span>
+<span class="fc" id="L129">    }</span>
+
+    /**
+     * Applies the user's theme to all UI components.
+     * @param toolbar The toolbar to apply theme to
+     */
+    private void applyTheme(Toolbar toolbar) {
+<span class="fc" id="L136">        cityNameTextView.setTextColor(themeTextColor);</span>
+<span class="fc" id="L137">        latitudeTextView.setTextColor(themeTextColor);</span>
+<span class="fc" id="L138">        longitudeTextView.setTextColor(themeTextColor);</span>
+<span class="fc" id="L139">        toolbar.setBackgroundColor(themeToolbarColor);</span>
+<span class="fc" id="L140">        getWindow().getDecorView().setBackgroundColor(themeBackgroundColor);</span>
+<span class="fc" id="L141">    }</span>
+
+    /**
+     * Callback invoked when the Google Map is ready to be used.
+     * Centers the map on the city coordinates and adds a marker.
+     *
+     * @param map The GoogleMap instance
+     */
+    @Override
+    public void onMapReady(GoogleMap map) {
+<span class="fc" id="L151">        this.googleMap = map;</span>
+
+        // Create a LatLng object for the city coordinates
+<span class="fc" id="L154">        LatLng cityLocation = new LatLng(latitude, longitude);</span>
+
+        // Add a marker at the city location
+<span class="fc" id="L157">        googleMap.addMarker(new MarkerOptions()</span>
+<span class="fc" id="L158">                .position(cityLocation)</span>
+<span class="fc" id="L159">                .title(cityName));</span>
+
+        // Move camera to the city location with appropriate zoom level
+        // Zoom level 10 provides a good city-level view
+<span class="fc" id="L163">        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(cityLocation, 10));</span>
+
+        // Enable zoom controls
+<span class="fc" id="L166">        googleMap.getUiSettings().setZoomControlsEnabled(true);</span>
+<span class="fc" id="L167">    }</span>
+
+    /**
+     * Handles the back button being pressed.
+     * @return true if the back button was pressed
+     */
+    @Override
+    public boolean onSupportNavigateUp() {
+<span class="nc" id="L175">        onBackPressed();</span>
+<span class="nc" id="L176">        return true;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserDatabaseHelper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">edu.uiuc.cs427app</a> &gt; <span class="el_source">UserDatabaseHelper.java</span></div><h1>UserDatabaseHelper.java</h1><pre class="source lang-java linenums">package edu.uiuc.cs427app;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+
+/**
+ * UserDatabaseHelper manages the SQLite database for storing user accounts.
+ * This class handles creating the database, adding users, validating credentials,
+ * and retrieving user information.
+ */
+public class UserDatabaseHelper extends SQLiteOpenHelper {
+
+    // Database configuration
+    private static final String DATABASE_NAME = &quot;WeatherApp.db&quot;;
+    private static final int DATABASE_VERSION = 3;
+
+    // Table and column names
+    private static final String TABLE_USERS = &quot;users&quot;;
+    private static final String COLUMN_ID = &quot;id&quot;;
+    private static final String COLUMN_USERNAME = &quot;username&quot;;
+    private static final String COLUMN_PASSWORD = &quot;password&quot;;
+    private static final String COLUMN_THEME_BACKGROUND = &quot;theme_background&quot;;
+    private static final String COLUMN_THEME_TEXT = &quot;theme_text&quot;;
+    private static final String COLUMN_THEME_ACCENT = &quot;theme_accent&quot;;
+    private static final String COLUMN_THEME_BUTTON = &quot;theme_button&quot;;
+    private static final String COLUMN_THEME_TOOLBAR = &quot;theme_toolbar&quot;;
+    private static final String COLUMN_THEME_PROMPT = &quot;theme_prompt&quot;;
+
+    /**
+     * Constructor for UserDatabaseHelper.
+     *
+     * @param context The application context
+     */
+    public UserDatabaseHelper(Context context) {
+<span class="fc" id="L38">        super(context, DATABASE_NAME, null, DATABASE_VERSION);</span>
+<span class="fc" id="L39">    }</span>
+
+    /**
+     * Called when the database is created for the first time.
+     * Creates the users table with all necessary columns.
+     *
+     * @param db The database to create the table in
+     */
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+<span class="fc" id="L49">        String CREATE_USERS_TABLE = &quot;CREATE TABLE &quot; + TABLE_USERS + &quot;(&quot;</span>
+                + COLUMN_ID + &quot; INTEGER PRIMARY KEY AUTOINCREMENT,&quot;
+                + COLUMN_USERNAME + &quot; TEXT UNIQUE,&quot;
+                + COLUMN_PASSWORD + &quot; TEXT,&quot;
+                + COLUMN_THEME_BACKGROUND + &quot; TEXT,&quot;
+                + COLUMN_THEME_TEXT + &quot; TEXT,&quot;
+                + COLUMN_THEME_ACCENT + &quot; TEXT,&quot;
+                + COLUMN_THEME_BUTTON + &quot; TEXT,&quot;
+                + COLUMN_THEME_TOOLBAR + &quot; TEXT,&quot;
+                + COLUMN_THEME_PROMPT + &quot; TEXT&quot;
+                + &quot;)&quot;;
+<span class="fc" id="L60">        db.execSQL(CREATE_USERS_TABLE);</span>
+<span class="fc" id="L61">    }</span>
+
+    /**
+     * Called when the database needs to be upgraded.
+     * Drops the old table and creates a new one.
+     *
+     * @param db The database to upgrade
+     * @param oldVersion The old database version
+     * @param newVersion The new database version
+     */
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        // If the old database is version 1, it needs all the version 2 changes
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        if (oldVersion &lt; 2) {</span>
+<span class="nc" id="L75">            db.execSQL(&quot;ALTER TABLE &quot; + TABLE_USERS + &quot; ADD COLUMN &quot; + COLUMN_THEME_TOOLBAR + &quot; TEXT&quot;);</span>
+            // Add any other changes that were part of version 2
+        }
+
+        // If the old database is version 2, it only needs the version 3 changes
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        if (oldVersion &lt; 3) {</span>
+<span class="nc" id="L81">            db.execSQL(&quot;ALTER TABLE &quot; + TABLE_USERS + &quot; ADD COLUMN &quot; + COLUMN_THEME_PROMPT + &quot; TEXT&quot;);</span>
+        }
+<span class="nc" id="L83">    }</span>
+
+    /**
+     * Adds a new user to the database.
+     * Returns true if successful, false if username already exists.
+     *
+     * @param username The username for the new account
+     * @param password The password for the new account
+     * @param themeBackground The background color for the user's theme
+     * @param themeText The text color for the user's theme
+     * @param themeAccent The accent color for the user's theme
+     * @param themeButton The button color for the user's theme
+     * @return true if user was added successfully, false if username already exists
+     */
+    public boolean addUser(String username, String password, String themeBackground,
+                           String themeText, String themeAccent, String themeButton,
+                           String themeToolbar, String themePrompt) {
+        // Check if username already exists
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">        if (userExists(username)) {</span>
+<span class="nc" id="L102">            return false;</span>
+        }
+
+<span class="fc" id="L105">        SQLiteDatabase db = this.getWritableDatabase();</span>
+<span class="fc" id="L106">        ContentValues values = new ContentValues();</span>
+<span class="fc" id="L107">        values.put(COLUMN_USERNAME, username);</span>
+<span class="fc" id="L108">        values.put(COLUMN_PASSWORD, password);</span>
+<span class="fc" id="L109">        values.put(COLUMN_THEME_BACKGROUND, themeBackground);</span>
+<span class="fc" id="L110">        values.put(COLUMN_THEME_TEXT, themeText);</span>
+<span class="fc" id="L111">        values.put(COLUMN_THEME_ACCENT, themeAccent);</span>
+<span class="fc" id="L112">        values.put(COLUMN_THEME_BUTTON, themeButton);</span>
+<span class="fc" id="L113">        values.put(COLUMN_THEME_TOOLBAR, themeToolbar);</span>
+<span class="fc" id="L114">        values.put(COLUMN_THEME_PROMPT, themePrompt);</span>
+
+<span class="fc" id="L116">        long result = db.insert(TABLE_USERS, null, values);</span>
+<span class="fc" id="L117">        db.close();</span>
+
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">        return result != -1; // Returns true if insert was successful</span>
+    }
+
+    /**
+     * Checks if a username already exists in the database.
+     *
+     * @param username The username to check
+     * @return true if the username exists, false otherwise
+     */
+    public boolean userExists(String username) {
+<span class="fc" id="L129">        SQLiteDatabase db = this.getReadableDatabase();</span>
+<span class="fc" id="L130">        Cursor cursor = db.query(TABLE_USERS,</span>
+                new String[]{COLUMN_USERNAME},
+                COLUMN_USERNAME + &quot;=?&quot;,
+                new String[]{username},
+                null, null, null);
+
+<span class="fc bfc" id="L136" title="All 2 branches covered.">        boolean exists = cursor.getCount() &gt; 0;</span>
+<span class="fc" id="L137">        cursor.close();</span>
+<span class="fc" id="L138">        db.close();</span>
+<span class="fc" id="L139">        return exists;</span>
+    }
+
+    /**
+     * Validates user credentials.
+     * Checks if the provided username and password match a record in the database.
+     *
+     * @param username The username to validate
+     * @param password The password to validate
+     * @return true if credentials are valid, false otherwise
+     */
+    public boolean validateUser(String username, String password) {
+<span class="fc" id="L151">        SQLiteDatabase db = this.getReadableDatabase();</span>
+<span class="fc" id="L152">        Cursor cursor = db.query(TABLE_USERS,</span>
+                new String[]{COLUMN_USERNAME},
+                COLUMN_USERNAME + &quot;=? AND &quot; + COLUMN_PASSWORD + &quot;=?&quot;,
+                new String[]{username, password},
+                null, null, null);
+
+<span class="fc bfc" id="L158" title="All 2 branches covered.">        boolean isValid = cursor.getCount() &gt; 0;</span>
+<span class="fc" id="L159">        cursor.close();</span>
+<span class="fc" id="L160">        db.close();</span>
+<span class="fc" id="L161">        return isValid;</span>
+    }
+
+    /**
+     * Retrieves a user's theme information from the database.
+     *
+     * @param username The username whose theme to retrieve
+     * @return A User object containing the theme information, or null if user not found
+     */
+    public User getUserTheme(String username) {
+<span class="fc" id="L171">        SQLiteDatabase db = this.getReadableDatabase();</span>
+<span class="fc" id="L172">        Cursor cursor = db.query(TABLE_USERS,</span>
+                new String[]{COLUMN_USERNAME, COLUMN_THEME_BACKGROUND, COLUMN_THEME_TEXT,
+                        COLUMN_THEME_ACCENT, COLUMN_THEME_BUTTON, COLUMN_THEME_TOOLBAR,
+                        COLUMN_THEME_PROMPT},
+                COLUMN_USERNAME + &quot;=?&quot;,
+                new String[]{username},
+                null, null, null);
+
+<span class="fc" id="L180">        User user = null;</span>
+<span class="fc bfc" id="L181" title="All 2 branches covered.">        if (cursor.moveToFirst()) {</span>
+<span class="fc" id="L182">            user = new User();</span>
+<span class="fc" id="L183">            user.username = cursor.getString(0);</span>
+<span class="fc" id="L184">            user.themeBackground = cursor.getString(1);</span>
+<span class="fc" id="L185">            user.themeText = cursor.getString(2);</span>
+<span class="fc" id="L186">            user.themeAccent = cursor.getString(3);</span>
+<span class="fc" id="L187">            user.themeButton = cursor.getString(4);</span>
+<span class="fc" id="L188">            user.themeToolbar = cursor.getString(5);</span>
+<span class="fc" id="L189">            user.themePrompt = cursor.getString(6);</span>
+        }
+
+<span class="fc" id="L192">        cursor.close();</span>
+<span class="fc" id="L193">        db.close();</span>
+<span class="fc" id="L194">        return user;</span>
+    }
+
+    /**
+     * Updates an existing user's theme colors and theme prompt.
+     *
+     * @param username The user to update
+     * @param background New background color hex
+     * @param text New text color hex
+     * @param accent New accent color hex
+     * @param button New button color hex
+     * @param toolbar New toolbar color hex
+     * @param themePrompt New theme prompt string
+     */
+    public void updateUserTheme(String username, String background, String text, String accent, String button, String toolbar, String themePrompt) {
+<span class="nc" id="L209">        SQLiteDatabase db = this.getWritableDatabase();</span>
+<span class="nc" id="L210">        ContentValues values = new ContentValues();</span>
+<span class="nc" id="L211">        values.put(COLUMN_THEME_BACKGROUND, background);</span>
+<span class="nc" id="L212">        values.put(COLUMN_THEME_TEXT, text);</span>
+<span class="nc" id="L213">        values.put(COLUMN_THEME_ACCENT, accent);</span>
+<span class="nc" id="L214">        values.put(COLUMN_THEME_BUTTON, button);</span>
+<span class="nc" id="L215">        values.put(COLUMN_THEME_TOOLBAR, toolbar);</span>
+<span class="nc" id="L216">        values.put(COLUMN_THEME_PROMPT, themePrompt);</span>
+
+<span class="nc" id="L218">        db.update(TABLE_USERS, values, COLUMN_USERNAME + &quot;=?&quot;, new String[]{username});</span>
+<span class="nc" id="L219">        db.close();</span>
+<span class="nc" id="L220">    }</span>
+
+
+    /**
+     * Simple User class to hold user information.
+     */
+<span class="fc" id="L226">    public static class User {</span>
+        public String username;
+        public String themeBackground;
+        public String themeText;
+        public String themeAccent;
+        public String themeButton;
+        public String themeToolbar;
+        public String themePrompt;
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
