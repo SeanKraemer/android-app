@@ -1,0 +1,6 @@
+# Copy this file to local.properties and fill in real values for full integrations.
+# Leave values blank for mock/demo behavior where supported.
+
+GEMINI_API_KEY=
+OPENWEATHERMAP_API_KEY=
+MAPS_API_KEY=

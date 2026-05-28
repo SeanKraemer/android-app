@@ -13,6 +13,7 @@ import com.google.gson.annotations.SerializedName;
 
 import android.util.Log;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -103,8 +104,14 @@ public class WeatherInsightsGenerator {
     ) {
         // Validate API key
         if (apiKey == null || apiKey.isEmpty()) {
-            Log.e(TAG, "API key is missing!");
-            callback.onError(new IllegalArgumentException("API key missing"));
+            Log.w(TAG, "API key missing; returning demo weather questions.");
+            QuestionSet fallback = new QuestionSet();
+            fallback.questions = Arrays.asList(
+                    "What should I wear today?",
+                    "Is this good weather for outdoor plans?",
+                    "Should I expect travel delays?"
+            );
+            callback.onQuestionsGenerated(fallback);
             return;
         }
 
@@ -222,8 +229,10 @@ public class WeatherInsightsGenerator {
     ) {
         // Validate API key
         if (apiKey == null || apiKey.isEmpty()) {
-            Log.e(TAG, "API key is missing!");
-            callback.onError(new IllegalArgumentException("API key missing"));
+            Log.w(TAG, "API key missing; returning demo weather answer.");
+            Answer fallback = new Answer();
+            fallback.answer = "Demo mode is using local weather guidance because no Gemini API key is configured. Based on the current conditions, plan for comfortable weather, check the forecast before leaving, and adjust clothing or activities if conditions change.";
+            callback.onAnswerGenerated(fallback);
             return;
         }
 

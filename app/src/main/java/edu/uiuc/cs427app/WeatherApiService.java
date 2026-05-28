@@ -67,6 +67,12 @@ public class WeatherApiService {
      * @param callback Callback to handle the result
      */
     public void getCurrentWeather(String cityName, WeatherCallback callback) {
+        if (apiKey == null || apiKey.isEmpty()) {
+            Log.w(TAG, "OpenWeatherMap API key missing; returning demo weather.");
+            mainHandler.post(() -> callback.onSuccess(WeatherData.demo(cityName)));
+            return;
+        }
+
         // Build the URL for API 2.5
         String url = BASE_URL + "?q=" + cityName + "&appid=" + apiKey;
 

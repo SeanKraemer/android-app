@@ -1,6 +1,7 @@
 package edu.uiuc.cs427app;
 
 import com.google.gson.annotations.SerializedName;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -29,6 +30,31 @@ public class WeatherData {
 
     @SerializedName("name")
     public String name; // City name
+
+    public static WeatherData demo(String cityName) {
+        WeatherData data = new WeatherData();
+        data.name = cityName;
+        data.coord = new Coordinates();
+        data.coord.lon = -87.6298;
+        data.coord.lat = 41.8781;
+        data.main = new Main();
+        data.main.temp = 295.15;
+        data.main.feelsLike = 295.15;
+        data.main.tempMin = 293.15;
+        data.main.tempMax = 297.15;
+        data.main.pressure = 1013;
+        data.main.humidity = 55;
+        data.wind = new Wind();
+        data.wind.speed = 3.6;
+        data.wind.deg = 220;
+        Weather condition = new Weather();
+        condition.id = 800;
+        condition.main = "Clear";
+        condition.description = "clear sky";
+        condition.icon = "01d";
+        data.weather = Collections.singletonList(condition);
+        return data;
+    }
 
     /**
      * Coordinates (longitude and latitude)

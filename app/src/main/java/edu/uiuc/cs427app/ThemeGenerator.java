@@ -88,8 +88,15 @@ public class ThemeGenerator {
      */
     public static void generateTheme(String apiKey, String prompt, ThemeCallback callback) {
         if (apiKey == null || apiKey.isEmpty()) {
-            Log.e("ThemeGenerator", "API key is missing!");
-            callback.onError(new IllegalArgumentException("API key missing"));
+            Log.w(TAG, "API key missing; returning default demo theme.");
+            ThemeSpec theme = new ThemeSpec();
+            theme.backgroundColor = "#F7FAFC";
+            theme.textColor = "#1A202C";
+            theme.accentColor = "#2563EB";
+            theme.buttonColor = "#10B981";
+            theme.toolbarColor = "#1F2937";
+            callback.onThemeGenerated(theme);
+            return;
         }
 
         Log.d(TAG, "Starting theme generation with prompt: " + prompt);
