@@ -1,5 +1,8 @@
-# Copy this file to local.properties and fill in real values for full integrations.
-# Leave values blank for mock/demo behavior where supported.
+# Copy this file to local.properties.
+# Keep real local.properties files out of git.
+
+# Required for command-line Gradle builds. Android Studio may manage this automatically.
+sdk.dir=/path/to/Android/sdk
 
 GEMINI_API_KEY=
 OPENWEATHERMAP_API_KEY=

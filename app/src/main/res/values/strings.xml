@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">Team 425</string>
+    <string name="app_name">Weather Planner</string>
+    <string name="main_title">Android Weather Planner</string>
+    <string name="user_title_format">%1$s - %2$s</string>
     <string-array name="layout_options">
         <item>Layout 1 - Default</item>
         <item>Layout 2 - Compact</item>
@@ -38,7 +40,6 @@
     <string name="error_empty_login_fields">Please enter both username and password</string>
 
     <!-- Main Activity Strings -->
-    <string name="team_prefix">Team </string>
     <string name="logout_button">Logout</string>
 
     <!-- New strings for Details layout -->
@@ -53,5 +54,6 @@
     <string name="map_city_format">City: %s</string>
     <string name="map_latitude_format">Latitude: %.6f</string>
     <string name="map_longitude_format">Longitude: %.6f</string>
+    <string name="map_demo_message">Demo mode: add MAPS_API_KEY in local.properties to load the interactive map.</string>
 
 </resources>

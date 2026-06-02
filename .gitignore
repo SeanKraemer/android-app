@@ -1,20 +1,41 @@
-# Gradle files
+# Gradle and Android build output
 .gradle/
 build/
+**/build/
+captures/
+.externalNativeBuild/
+.cxx/
 
-# Local properties
+# Local SDK config and secrets
 local.properties
+*.keystore
+*.jks
+*.p12
+*.pem
+*.key
+*.env
+.env
+.env.*
 
-# IDE files
+# IDE and OS files
 .idea/
 *.iml
+*.ipr
+*.iws
+.vscode/
 .DS_Store
 
-# Captures
-captures/
-
-# C++ files
-.cxx/
+# Generated reports and artifacts
+*.apk
+*.aab
+*.ap_
+*.aar
+*.log
+*.ec
+*.exec
+coverage/
+reports/
+htmlcov/
 
 # Build cache files
 *.lock

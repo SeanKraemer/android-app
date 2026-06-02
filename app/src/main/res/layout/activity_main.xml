@@ -29,7 +29,7 @@
             android:id="@+id/textView3"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:text="CS427 Project App" />
+            android:text="@string/main_title" />
 
         <TextView
             android:id="@+id/themePromptText"
