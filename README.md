@@ -1,8 +1,18 @@
 # Android Weather Planner
 
-Android Weather Planner is a Java Android app for saving city watchlists, viewing current weather, opening city maps, and generating AI-assisted weather insights.
+[![CI](https://github.com/SeanKraemer/android-app/actions/workflows/ci.yml/badge.svg)](https://github.com/SeanKraemer/android-app/actions/workflows/ci.yml)
 
-This repository is a public portfolio copy of a collaborative software engineering project. My portfolio pass focused on making the app safe to publish, documenting setup and architecture, and preserving a clean interview walkthrough of the Android flow, local persistence, and external API integrations.
+A Java Android app for planning around weather: save a per-user city watchlist, view live current conditions, open an interactive city map, and get AI-generated weather insights and imagery. Built on SQLite + ContentProvider persistence, OpenWeatherMap, the Google Maps SDK, and the Gemini API — with deterministic demo fallbacks so every screen works with zero API keys configured. Originated as the team project for UIUC's CS 427 Software Engineering graduate course (Fall 2025); this is the public portfolio copy.
+
+![Demo: sign in, save a city, view live weather, open the map, and generate Gemini weather insights](docs/demo.gif)
+
+*One take: sign in, search and save a city, open live OpenWeatherMap conditions, jump to the Google Maps view, then ask Gemini context-aware questions about the day's weather.*
+
+| City watchlist | Weather details | Map view | Gemini insights |
+|---|---|---|---|
+| ![City list](docs/screenshots/01-cities.png) | ![Weather details](docs/screenshots/02-weather.png) | ![Map](docs/screenshots/03-map.png) | ![Insights](docs/screenshots/04-insights.png) |
+
+---
 
 ## Features
 
@@ -22,12 +32,11 @@ The app is a single Android application module using Java, AndroidX AppCompat, S
 - `MainActivity` displays the signed-in user's city list and routes to weather or map views.
 - `DetailsActivity` fetches weather data, renders the weather card, and starts AI image generation.
 - `WeatherInsightsActivity` displays generated question buttons and answers.
+- `MapActivity` renders the saved city on Google Maps, or a coordinate-only demo view.
 - `UserDatabaseHelper`, `LocationDbHelper`, `LocationProvider`, and `LocationContract` manage local persistence.
-- `WeatherApiService`, `ThemeGenerator`, `WeatherInsightsGenerator`, and `WeatherImageGenerator` isolate external API behavior and demo fallbacks.
+- `WeatherApiService`, `ThemeGenerator`, `WeatherInsightsGenerator`, and `WeatherImageGenerator` isolate external API behavior and demo fallbacks; `GeminiJson` handles the markdown-fence cleanup Gemini responses sometimes need before JSON parsing.
 
-The Java package, Android namespace, application ID, and ContentProvider authority now use the public portfolio identity `com.weatherplanner.app`.
-
-## Local Setup
+## Quickstart
 
 Open the project in Android Studio, or configure the command line:
 
@@ -46,93 +55,47 @@ MAPS_API_KEY=
 
 Leaving API keys blank enables demo mode. The app still builds and can be reviewed without live Gemini, OpenWeatherMap, or Google Maps calls.
 
+```bash
+./gradlew :app:testDebugUnitTest   # JVM unit tests
+./gradlew :app:assembleDebug       # build the debug APK
+./gradlew :app:lintDebug           # Android lint
+```
+
+To run it: start an emulator (a recent Pixel image on API 29+), then `./gradlew :app:installDebug` or click Run in Android Studio. Create a local account, sign in, add a city, and open Weather, Weather Insights, and Map.
+
 ## Credentials And API Setup
 
-The app needs these local-only values for full live functionality:
+Only add keys to `local.properties`; never commit real values. All three are optional — each feature degrades to a deterministic demo fallback without its key.
 
-```properties
-GEMINI_API_KEY=
-OPENWEATHERMAP_API_KEY=
-MAPS_API_KEY=
-```
+- `GEMINI_API_KEY` — theme generation, weather insight Q&A, and weather-aware city images. Text uses `gemini-2.5-flash-lite`; images use `imagen-4.0-fast-generate-001`. Create a key in [Google AI Studio](https://aistudio.google.com/app/apikey) and set low quota limits.
+- `OPENWEATHERMAP_API_KEY` — live current weather. Use a free-tier key for demos; production would proxy weather calls through a backend instead of shipping the key in the APK.
+- `MAPS_API_KEY` — the interactive map screen. Enable Maps SDK for Android in Google Cloud and restrict the key to package `com.weatherplanner.app` plus your debug/release certificate SHA-1 (`keytool -list -v -alias androiddebugkey -keystore ~/.android/debug.keystore -storepass android -keypass android`).
 
-Only add these to `local.properties`; never commit real values.
-
-`GEMINI_API_KEY`
-
-- Used for theme generation, weather insight questions and answers, and weather-aware city images.
-- Blank value enables local theme, Q&A, and image fallbacks.
-- Text features use `gemini-2.5-flash-lite` for low-cost, low-latency JSON responses.
-- Image generation uses `imagen-4.0-fast-generate-001`, the lowest-cost Imagen 4 variant.
-- Use a Gemini API key with access to Gemini text generation and Imagen image generation.
-- Keep the key out of git, monitor free-tier usage, and set low quota limits where your provider account allows it.
-
-`OPENWEATHERMAP_API_KEY`
-
-- Used for live current weather data.
-- Blank value enables deterministic demo weather.
-- For a public mobile demo, use a limited/free key and monitor usage. For production, proxy weather calls through a backend instead of shipping the key in the APK.
-
-`MAPS_API_KEY`
-
-- Used for the interactive Google Maps screen.
-- Blank value shows city name, latitude, longitude, and a demo-mode message.
-- Enable Maps SDK for Android in Google Cloud.
-- Restrict the key to Android apps using package name `com.weatherplanner.app` and your debug or release certificate SHA-1.
-- Restrict APIs to Maps SDK for Android.
-- The current app does not require Places API, Routes API, Maps JavaScript API, Maps Static API, or Google Maps Platform Geocoding API.
-
-Get the debug SHA-1 with:
+## Testing
 
 ```bash
-keytool -list -v -alias androiddebugkey -keystore ~/.android/debug.keystore -storepass android -keypass android
+./gradlew :app:testDebugUnitTest     # JVM unit tests (JSON parsing, weather formatting)
+./gradlew connectedDebugAndroidTest  # Espresso suite; needs an emulator or device
 ```
 
-Do not commit real keys, signing files, SDK paths, generated APKs, or coverage artifacts.
+CI (GitHub Actions) runs unit tests, the debug build, and lint on every push and pull request. The Espresso suite (~1,600 lines across login, sign-up, city management, weather, map, and logout flows) runs locally against an emulator.
 
-## Build And Test
+Manual QA checklist:
 
-Fast checks:
-
-```bash
-./gradlew test
-./gradlew :app:testDebugUnitTest
-./gradlew :app:assembleDebug
-./gradlew :app:lintDebug
-```
-
-Connected tests require an emulator or device:
-
-```bash
-adb devices
-./gradlew connectedDebugAndroidTest
-```
-
-## Android Studio Emulator Walkthrough
-
-1. Open Android Studio.
-2. Select **Open** and choose this repository folder.
-3. Let Gradle sync finish. If Android Studio asks for a JDK, choose Java 17.
-4. Open `local.properties` and confirm `sdk.dir` points to your Android SDK.
-5. Add `GEMINI_API_KEY`, `OPENWEATHERMAP_API_KEY`, and `MAPS_API_KEY` if you want live integrations.
-6. Open **Tools > Device Manager**.
-7. Create or start an Android Virtual Device. A recent Pixel image on API 34 is a good default.
-8. Wait until the emulator appears in the Android Studio device selector.
-9. Select the `app` run configuration.
-10. Click **Run**.
-11. In the emulator, create a local account, sign in, add a city, then open Weather, Weather Insights, and Map.
-12. If Maps shows demo mode, rebuild after adding a valid `MAPS_API_KEY`.
-
-## Manual QA Checklist
-
-- Create two local users with different theme prompts.
-- Sign in, sign out, and confirm the session clears while accounts persist.
+- Create two local users with different theme prompts; sign in/out and confirm the session clears while accounts persist.
 - Add, view, and remove saved cities for each user.
-- Open weather details with blank API keys and confirm demo weather plus local image fallback.
-- Open weather insights with blank API keys and confirm question buttons and answer text render.
-- Open the map screen with blank `MAPS_API_KEY` and confirm coordinates plus demo message render.
-- Add live keys and re-check weather, Gemini theme/insight/image generation, and interactive map behavior.
+- With blank keys: confirm demo weather, local image fallback, demo insight Q&A, and the coordinate-only map view.
+- With live keys: re-check weather, Gemini theme/insight/image generation, and interactive map behavior.
 
-## Portfolio Framing
+## Design Notes & Limitations
 
-This app is useful to discuss Android activity flow, local persistence with SQLite and ContentProviders, handling external API configuration safely, graceful no-key demo behavior, and the tradeoffs involved in turning a collaborative prototype into a public portfolio project.
+- **API keys live in `BuildConfig`** — fine for a local demo, but any key shipped in an APK is extractable. A production build would proxy OpenWeatherMap and Gemini calls through a backend and keep only the (package+SHA-1-restricted) Maps key on device.
+- **Activity-centric architecture, no ViewModel layer.** State lives in activities and survives via SQLite/SharedPreferences rather than `ViewModel`/`SavedStateHandle`. Honest trade-off from the project's scope; a rewrite would adopt MVVM with Room.
+- **Passwords are stored in plaintext in the local SQLite database.** The account system exists to demonstrate per-user data isolation on a single device — there is no server, and this is not an auth implementation to copy. A real app would at minimum salt-and-hash with a KDF, or use Credential Manager.
+- **City local time is approximated from longitude** (15° ≈ 1 hour) rather than the API's timezone offset field, so it can be off near timezone boundaries.
+- **Gemini responses are parsed defensively**: the model sometimes wraps JSON in markdown fences despite instructions, so responses are stripped before parsing and invalid payloads fall back to error handling rather than crashing.
+- **The ContentProvider is internal-only.** It exists to demonstrate the component (course requirement) — a single-app design would normally talk to SQLite directly or use Room.
+
+## License
+
+MIT — see [LICENSE](LICENSE). Course context: this began as a collaborative CS 427 (UIUC, Fall 2025) team project; this repository is my independently maintained public copy, with identities, configuration, and history sanitized for publication.
