@@ -126,7 +126,6 @@ public class WeatherInsightsActivity extends AppCompatActivity {
             buttonColor = "#4CAF50";
         }
 
-        Log.d(TAG, "Loaded theme for user: " + username);
     }
 
     /**
@@ -157,13 +156,6 @@ public class WeatherInsightsActivity extends AppCompatActivity {
         humidity = getIntent().getStringExtra("humidity");
         windCondition = getIntent().getStringExtra("windCondition");
 
-        // Log received data for debugging
-        Log.d(TAG, "Received weather data:");
-        Log.d(TAG, "  City: " + cityName);
-        Log.d(TAG, "  Temperature: " + temperature);
-        Log.d(TAG, "  Condition: " + weatherCondition);
-        Log.d(TAG, "  Humidity: " + humidity);
-        Log.d(TAG, "  Wind: " + windCondition);
 
         // Validate that we received the necessary data
         if (cityName == null || temperature == null || weatherCondition == null) {
@@ -196,7 +188,6 @@ public class WeatherInsightsActivity extends AppCompatActivity {
         loadingText.setText("Generating questions...");
         questionsContainer.setVisibility(View.GONE);
 
-        Log.d(TAG, "Starting question generation...");
 
         // Call LLM to generate questions
         WeatherInsightsGenerator.generateQuestions(
@@ -216,7 +207,6 @@ public class WeatherInsightsActivity extends AppCompatActivity {
                     public void onQuestionsGenerated(WeatherInsightsGenerator.QuestionSet questions) {
                         // Run on UI thread since callback may be on background thread
                         runOnUiThread(() -> {
-                            Log.d(TAG, "Questions generated successfully");
 
                             // Hide loading state
                             loadingSpinner.setVisibility(View.GONE);
@@ -267,7 +257,6 @@ public class WeatherInsightsActivity extends AppCompatActivity {
         // Clear any existing buttons
         questionsContainer.removeAllViews();
 
-        Log.d(TAG, "Displaying " + questions.size() + " question buttons");
 
         // Create a button for each question
         for (int i = 0; i < questions.size(); i++) {
@@ -293,7 +282,6 @@ public class WeatherInsightsActivity extends AppCompatActivity {
 
             // Set click listener to generate answer for this question
             questionButton.setOnClickListener(v -> {
-                Log.d(TAG, "Question button clicked: " + question);
                 generateAnswerForQuestion(question, questionNumber);
             });
 
@@ -316,7 +304,6 @@ public class WeatherInsightsActivity extends AppCompatActivity {
         answerScrollView.setVisibility(View.VISIBLE);
         answerText.setText("Generating answer...");
 
-        Log.d(TAG, "Generating answer for: " + question);
 
         // Call LLM to generate answer
         WeatherInsightsGenerator.generateAnswer(
@@ -337,7 +324,6 @@ public class WeatherInsightsActivity extends AppCompatActivity {
                     public void onAnswerGenerated(WeatherInsightsGenerator.Answer answer) {
                         // Display answer on UI thread
                         runOnUiThread(() -> {
-                            Log.d(TAG, "Answer generated successfully");
 
                             // Format and display the answer
                             String formattedAnswer = "Q: " + question + "\n\nA: " + answer.answer;

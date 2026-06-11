@@ -8,10 +8,6 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.google.gson.Gson;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import android.util.Log;
 
@@ -99,12 +95,8 @@ public class ThemeGenerator {
             return;
         }
 
-        Log.d(TAG, "Starting theme generation with prompt: " + prompt);
-
         GenerativeModel gm = new GenerativeModel(GeminiModels.FAST_TEXT_MODEL, apiKey);
         GenerativeModelFutures model = GenerativeModelFutures.from(gm);
-        Log.d(TAG, "Initialized Gemini model successfully.");
-
 
         String createPrompt = "You are an expert UI/UX designer. Create a HIGHLY READABLE and VISUALLY STRIKING Android app theme based on: '" + prompt +
                 "'.\n\nCRITICAL REQUIREMENTS:\n" +
@@ -120,12 +112,9 @@ public class ThemeGenerator {
                 "Return ONLY valid JSON (no markdown):\n" +
                 "{\"backgroundColor\":\"#XXXXXX\",\"textColor\":\"#XXXXXX\",\"accentColor\":\"#XXXXXX\",\"buttonColor\":\"#XXXXXX\",\"toolbarColor\":\"#XXXXXX\"}";
 
-        Log.v(TAG, "Full generated prompt: " + createPrompt);
-
         Content content = new Content.Builder().addText(createPrompt).build();
 
         ListenableFuture<GenerateContentResponse> futureResponse = model.generateContent(content);
-        Log.d(TAG, "Sent prompt to Gemini model. Awaiting response...");
 
         Futures.addCallback(futureResponse, new FutureCallback<>() {
             /**
@@ -135,16 +124,17 @@ public class ThemeGenerator {
              */
             @Override
             public void onSuccess(GenerateContentResponse result) {
-                String text = result.getText();
-                Log.d(TAG, "Received response from Gemini: " + text);
-                String cleanJson = text
-                        .replaceAll("```json", "")
-                        .replaceAll("```", "")
-                        .trim();
-                Log.d(TAG, "Cleared response from Gemini: " + cleanJson);
-                Gson gson = new Gson();
-                ThemeSpec theme = gson.fromJson(cleanJson, ThemeSpec.class);
-                callback.onThemeGenerated(theme);
+                try {
+                    ThemeSpec theme = GeminiJson.parse(result.getText(), ThemeSpec.class);
+                    if (theme == null) {
+                        callback.onError(new Exception("Empty theme response"));
+                        return;
+                    }
+                    callback.onThemeGenerated(theme);
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to parse theme JSON", e);
+                    callback.onError(e);
+                }
             }
             /**
              * Called when Gemini API request fails.

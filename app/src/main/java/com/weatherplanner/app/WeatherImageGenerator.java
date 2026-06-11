@@ -84,8 +84,6 @@ public class WeatherImageGenerator {
             return;
         }
 
-        // Informational log indicating the operation has started for this city
-        Log.d(TAG, "Generating weather image for " + cityName);
         Client genAIClient;
         try {
             genAIClient = Client.builder().apiKey(apiKey).build();
@@ -95,12 +93,6 @@ public class WeatherImageGenerator {
             return;
         }
 
-        // Debug which backend is selected to help troubleshoot environment differences
-        if (genAIClient.vertexAI()) {
-            Log.d(TAG, "Using Vertex AI");
-        } else {
-            Log.d(TAG, "Using Gemini Developer API");
-        }
 
         String prompt = "You are a creative weather artist. Based on the following weather data, generate a simple and visually appealing image that represents the weather in the city during this time.\n\n" +
                 "WEATHER DATA:\n" +
@@ -115,8 +107,6 @@ public class WeatherImageGenerator {
                 "2. The colors should reflect the weather conditions (e.g., warm colors for sunny, cool colors for rainy/cold).\n" +
                 "3. Do not include text or human figures.";
 
-        // Verbose log of the complete prompt for debugging
-        Log.v(TAG, "Full prompt for image: " + prompt);
 
         GenerateImagesConfig config =
                 GenerateImagesConfig.builder()

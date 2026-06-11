@@ -8,7 +8,6 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 
 import android.util.Log;
@@ -115,12 +114,9 @@ public class WeatherInsightsGenerator {
             return;
         }
 
-        Log.d(TAG, "Generating weather questions for " + cityName);
-
         // Initialize Gemini model
         GenerativeModel gm = new GenerativeModel(GeminiModels.FAST_TEXT_MODEL, apiKey);
         GenerativeModelFutures model = GenerativeModelFutures.from(gm);
-        Log.d(TAG, "Initialized Gemini model successfully.");
 
         // Construct the prompt for question generation
         String prompt = "You are a helpful weather assistant. Based on the following weather data, " +
@@ -144,12 +140,9 @@ public class WeatherInsightsGenerator {
                 "Return ONLY valid JSON (no markdown, no code blocks):\n" +
                 "{\"questions\": [\"question 1\", \"question 2\", \"question 3\"]}";
 
-        Log.v(TAG, "Full prompt for questions: " + prompt);
-
         // Create content and send request
         Content content = new Content.Builder().addText(prompt).build();
         ListenableFuture<GenerateContentResponse> futureResponse = model.generateContent(content);
-        Log.d(TAG, "Sent question generation prompt to Gemini. Awaiting response...");
 
         // Handle async response
         Futures.addCallback(futureResponse, new FutureCallback<GenerateContentResponse>() {
@@ -160,20 +153,8 @@ public class WeatherInsightsGenerator {
              */
             @Override
             public void onSuccess(GenerateContentResponse result) {
-                String responseText = result.getText();
-                Log.d(TAG, "Received question response from Gemini: " + responseText);
-
-                // Clean up the response (remove markdown if present)
-                String cleanJson = responseText
-                        .replaceAll("```json", "")
-                        .replaceAll("```", "")
-                        .trim();
-                Log.d(TAG, "Cleaned JSON: " + cleanJson);
-
-                // Parse JSON response
                 try {
-                    Gson gson = new Gson();
-                    QuestionSet questions = gson.fromJson(cleanJson, QuestionSet.class);
+                    QuestionSet questions = GeminiJson.parse(result.getText(), QuestionSet.class);
 
                     // Validate that we got questions
                     if (questions == null || questions.questions == null ||
@@ -183,7 +164,6 @@ public class WeatherInsightsGenerator {
                         return;
                     }
 
-                    Log.d(TAG, "Successfully parsed " + questions.questions.size() + " questions");
                     callback.onQuestionsGenerated(questions);
                 } catch (Exception e) {
                     Log.e(TAG, "Failed to parse questions JSON", e);
@@ -236,8 +216,6 @@ public class WeatherInsightsGenerator {
             return;
         }
 
-        Log.d(TAG, "Generating answer for question: " + question);
-
         // Initialize Gemini model
         GenerativeModel gm = new GenerativeModel(GeminiModels.FAST_TEXT_MODEL, apiKey);
         GenerativeModelFutures model = GenerativeModelFutures.from(gm);
@@ -262,12 +240,9 @@ public class WeatherInsightsGenerator {
                 "Return ONLY valid JSON (no markdown, no code blocks):\n" +
                 "{\"answer\": \"your answer here\"}";
 
-        Log.v(TAG, "Full prompt for answer: " + prompt);
-
         // Create content and send request
         Content content = new Content.Builder().addText(prompt).build();
         ListenableFuture<GenerateContentResponse> futureResponse = model.generateContent(content);
-        Log.d(TAG, "Sent answer generation prompt to Gemini. Awaiting response...");
 
         // Handle async response
         Futures.addCallback(futureResponse, new FutureCallback<GenerateContentResponse>() {
@@ -278,20 +253,8 @@ public class WeatherInsightsGenerator {
              */
             @Override
             public void onSuccess(GenerateContentResponse result) {
-                String responseText = result.getText();
-                Log.d(TAG, "Received answer response from Gemini: " + responseText);
-
-                // Clean up the response
-                String cleanJson = responseText
-                        .replaceAll("```json", "")
-                        .replaceAll("```", "")
-                        .trim();
-                Log.d(TAG, "Cleaned JSON: " + cleanJson);
-
-                // Parse JSON response
                 try {
-                    Gson gson = new Gson();
-                    Answer answer = gson.fromJson(cleanJson, Answer.class);
+                    Answer answer = GeminiJson.parse(result.getText(), Answer.class);
 
                     // Validate that we got an answer
                     if (answer == null || answer.answer == null || answer.answer.isEmpty()) {
@@ -300,7 +263,6 @@ public class WeatherInsightsGenerator {
                         return;
                     }
 
-                    Log.d(TAG, "Successfully generated answer");
                     callback.onAnswerGenerated(answer);
                 } catch (Exception e) {
                     Log.e(TAG, "Failed to parse answer JSON", e);

@@ -76,8 +76,6 @@ public class WeatherApiService {
         // Build the URL for API 2.5
         String url = BASE_URL + "?q=" + cityName + "&appid=" + apiKey;
 
-        Log.d(TAG, "Fetching weather for city: " + cityName);
-
         // Execute network request on background thread
         executor.execute(() -> {
             try {
@@ -89,7 +87,6 @@ public class WeatherApiService {
 
                 if (response.isSuccessful() && response.body() != null) {
                     String jsonResponse = response.body().string();
-                    Log.d(TAG, "Weather API response: " + jsonResponse);
 
                     // Parse JSON response
                     WeatherData weatherData = gson.fromJson(jsonResponse, WeatherData.class);

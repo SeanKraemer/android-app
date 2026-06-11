@@ -141,7 +141,6 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                         themeSpec.accentColor = "#2196F3";
                         themeSpec.buttonColor = "#4CAF50";
                         themeSpec.toolbarColor = "#00EEFF";
-                        Log.d("SignUpActivity", "Using default theme values");
                     }
 
                     // Add user to database
@@ -157,7 +156,6 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                     );
 
                     if (success) {
-                        Log.d("SignUpActivity", "User created successfully: " + username);
                         Toast.makeText(SignUpActivity.this, "Account created successfully! Please sign in.", Toast.LENGTH_SHORT).show();
 
                         // Redirect back to LoginActivity
